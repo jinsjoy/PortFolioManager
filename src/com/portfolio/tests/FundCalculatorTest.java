@@ -30,12 +30,18 @@ public class FundCalculatorTest {
     	g.addEdge("C", "H",1000);      
     }
     
-    String testOutput = "[A,D,0.167, A,F,0.083, A,E,0.083, A,H,0.333, A,G,0.333, B,D,0.5, B,F,0.25, B,E,0.25, C,H,0.5, C,G,0.5]";
-    
+    String testOutput1 = "[A,D,0.167, A,F,0.083, A,E,0.083, A,H,0.333, A,G,0.333, B,D,0.5, B,F,0.25, B,E,0.25, C,H,0.5, C,G,0.5]";
+    String testOutput2 = "[A,D,83.333, A,F,20.833, A,E,20.833, A,H,333.333, A,G,333.333, B,D,83.333, B,F,20.833, B,E,20.833, C,H,333.333, C,G,333.333]";
 
     @Test
     public void findFundWeightOfPortFolio() {
-    	assertEquals(testOutput, g.fundWeightCalculator().toString());
+    	assertEquals(testOutput1, g.fundWeightCalculator().toString());
+    }
+    
+    
+    @Test
+    public void findEmvWeightedReturnOfPortFolio() {
+    	assertEquals(testOutput2, g.fundWeightedReturn().toString());
     }
 
  

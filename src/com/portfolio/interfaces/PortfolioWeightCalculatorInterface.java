@@ -8,6 +8,8 @@ public interface PortfolioWeightCalculatorInterface {
 	
 	public List<String> fundWeightCalculator();
 	
+	public List<String> fundWeightedReturn();
+	
 	
 
 }

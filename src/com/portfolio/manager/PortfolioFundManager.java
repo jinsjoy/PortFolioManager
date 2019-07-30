@@ -35,8 +35,18 @@ public class PortfolioFundManager {
 		}
 
 		List<String> fundweights = fundGraph.fundWeightCalculator();
+		
+		System.out.println("List of Fund Weight for each node");
 
 		fundweights.forEach((element) -> {
+			System.out.println(element);
+		});
+
+		List<String> weightedReturnList = fundGraph.fundWeightedReturn();
+
+		
+		System.out.println("List of Weighted Return for each node");
+		weightedReturnList.forEach((element) -> {
 			System.out.println(element);
 		});
 	}

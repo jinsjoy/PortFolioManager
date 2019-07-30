@@ -3,6 +3,7 @@ package com.portfolio.fundWeightCalculator;
 import java.text.DecimalFormat;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,6 +49,7 @@ public class PortfolioFundWeightCalculator implements PortfolioWeightCalculatorI
 
 			adjacencyLists.forEach((childKey, childValue) -> {
 				childValue.forEach((e) -> {
+					//conditioncheck 1.check whwther if its a leaf node 2. check whether there is a path between 2 vertices.
 					if ((!adjacencyLists.containsKey(e.getName())) && isChild(key, e.getName())) {
 						double nodeWeight = e.getData();
 						double totalWeight = findTotalWeight(key);
@@ -60,6 +62,47 @@ public class PortfolioFundWeightCalculator implements PortfolioWeightCalculatorI
 			});
 		});
 		return fundWeights;
+	}
+	
+	@Override
+	public List<String> fundWeightedReturn() {
+		List<String> fundWeightedReturn = new ArrayList<String>();
+		double emvWeightOfRoot = findEmvOfRoot();
+
+		adjacencyLists.forEach((key, value) -> {
+
+			adjacencyLists.forEach((childKey, childValue) -> {
+				childValue.forEach((e) -> {
+					if ((!adjacencyLists.containsKey(e.getName())) && isChild(key, e.getName())) {
+						double emv = e.getData();
+						double emvWeight = emv/emvWeightOfRoot;
+						fundWeightedReturn.add(key + "," + e.getName() + ","
+									+ new DecimalFormat("#.###").format(emvWeight * emv));	
+					}
+				});
+			});
+		});
+		return fundWeightedReturn;
+	}
+	
+	
+	//Since input can be random, parsing the adjacencyList for find the emv weight of the root element
+	
+	private int findEmvOfRoot() {
+		int biggest = 0, sum = 0;
+		Collection<Set<Node>> valueSets = adjacencyLists.values();
+		Iterator<Set<Node>> it = valueSets.iterator();
+		while(it.hasNext()) {
+			Set<Node> nodeSet = it.next();
+			Iterator<Node> itNode = nodeSet.iterator();
+			while(itNode.hasNext()) {
+				Node node = itNode.next();
+				sum = sum + node.getData();
+			}
+			if(biggest < sum) biggest = sum;
+			sum = 0;
+		}
+		return biggest;
 	}
 
 	private int findTotalWeight(String key) {
@@ -146,5 +189,6 @@ public class PortfolioFundWeightCalculator implements PortfolioWeightCalculatorI
 			return processPath(src, source, path);
 		}
 	}
+
 
 }
