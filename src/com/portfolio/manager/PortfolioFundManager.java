@@ -15,17 +15,16 @@ public class PortfolioFundManager {
 
 		PortfolioWeightCalculatorInterface fundGraph = new PortfolioFundWeightCalculator();
 
-		/**
-		 * if(args.length < 1) { System.out.println("Error:Please run with a input text
-		 * file as parameter"); System.exit(1); }
-		 */
-
-		// Scanner reader = new Scanner(new FileInputStream(args[0]));
+		if (args.length < 1) {
+			System.out.println("Error:Please run with a input text file as parameter");
+			System.exit(1);
+		}
 
 		try {
 
-			File file = new File("/Users/jinsjoy/Documents/file.txt");
-			Scanner reader = new Scanner(file);
+			// File file = new File("/Users/jinsjoy/Documents/file.txt");
+			// Scanner reader = new Scanner(file);
+			Scanner reader = new Scanner(new FileInputStream(args[0]));
 			while (reader.hasNextLine()) {
 				String[] tokens = reader.nextLine().split("\\,");
 				fundGraph.addEdge(tokens[0], tokens[1], Integer.parseInt(tokens[2]));
@@ -36,7 +35,7 @@ public class PortfolioFundManager {
 		}
 
 		List<String> fundweights = fundGraph.fundWeightCalculator();
-		
+
 		fundweights.forEach((element) -> {
 			System.out.println(element);
 		});
