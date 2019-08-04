@@ -15,11 +15,9 @@ import com.portfolio.interfaces.PortfolioWeightCalculatorInterface;
 import com.portfolio.nodes.Node;
 
 public class PortfolioFundWeightCalculator implements PortfolioWeightCalculatorInterface {
-	
 
 	// add vertex name as key, and neighbours as values in set
 	private final Map<String, Set<Node>> adjacencyLists = new HashMap<>();
-	private static ArrayList<String> shortestPath = new ArrayList<String>();
 
 	private void addVertex(final String name) {
 		if (!this.adjacencyLists.containsKey(name)) {
@@ -40,66 +38,42 @@ public class PortfolioFundWeightCalculator implements PortfolioWeightCalculatorI
 		return neighBours;
 	}
 
-
 	@Override
 	public List<String> fundWeightCalculator() {
-		List<String> fundWeights = new ArrayList<String>();
-
+		List<String> fundWeight = new ArrayList<String>();
 		adjacencyLists.forEach((key, value) -> {
-
-			adjacencyLists.forEach((childKey, childValue) -> {
-				childValue.forEach((e) -> {
-					//conditioncheck 1.check whwther if its a leaf node 2. check whether there is a path between 2 vertices.
-					if ((!adjacencyLists.containsKey(e.getName())) && isChild(key, e.getName())) {
-						double nodeWeight = e.getData();
-						double totalWeight = findTotalWeight(key);
-						if (totalWeight != 0) {
-							fundWeights.add(key + "," + e.getName() + ","
-									+ new DecimalFormat("#.###").format(nodeWeight / totalWeight));
-						}
-					}
-				});
-			});
+			 breadthFirstSearch(key, fundWeight, "FUND_WEIGHT");
 		});
-		return fundWeights;
+		return fundWeight;
 	}
-	
+
 	@Override
 	public List<String> fundWeightedReturn() {
 		List<String> fundWeightedReturn = new ArrayList<String>();
-		double emvWeightOfRoot = findEmvOfRoot();
-
+		
 		adjacencyLists.forEach((key, value) -> {
-
-			adjacencyLists.forEach((childKey, childValue) -> {
-				childValue.forEach((e) -> {
-					if ((!adjacencyLists.containsKey(e.getName())) && isChild(key, e.getName())) {
-						double emv = e.getData();
-						double emvWeight = emv/emvWeightOfRoot;
-						fundWeightedReturn.add(key + "," + e.getName() + ","
-									+ new DecimalFormat("#.###").format(emvWeight * emv));	
-					}
-				});
-			});
+			breadthFirstSearch(key, fundWeightedReturn, "WEIGHTED_RETURN");
 		});
+			
 		return fundWeightedReturn;
 	}
-	
-	
-	//Since input can be random, parsing the adjacencyList for find the emv weight of the root element
-	
+
+	// Since input can be random, parsing the adjacencyList for find the emv weight
+	// of the root element
+
 	private int findEmvOfRoot() {
 		int biggest = 0, sum = 0;
 		Collection<Set<Node>> valueSets = adjacencyLists.values();
 		Iterator<Set<Node>> it = valueSets.iterator();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			Set<Node> nodeSet = it.next();
 			Iterator<Node> itNode = nodeSet.iterator();
-			while(itNode.hasNext()) {
+			while (itNode.hasNext()) {
 				Node node = itNode.next();
 				sum = sum + node.getData();
 			}
-			if(biggest < sum) biggest = sum;
+			if (biggest < sum)
+				biggest = sum;
 			sum = 0;
 		}
 		return biggest;
@@ -122,73 +96,50 @@ public class PortfolioFundWeightCalculator implements PortfolioWeightCalculatorI
 		}
 	}
 
-	private boolean isChild(String parentKey, String e) {
-		ArrayList<String> edges = breadthFirstSearch(parentKey, e);
-		if (edges == null) {
-			return false;
-		}
-		return !edges.isEmpty();
-	}
+	private List<String> breadthFirstSearch(String source, List<String> results , String operation) {
 
-	private ArrayList<String> breadthFirstSearch(String source, String destination) {
-		shortestPath.clear();
+		Node sourceNode = new Node(0, source);
 
-		// A list that stores the path.
-		ArrayList<String> path = new ArrayList<String>();
-
-	
-		if (source.equals(destination)) {
-			path.add(source);
-			return path;
-		}
-	
-		ArrayDeque<String> queue = new ArrayDeque<String>();
+		ArrayDeque<Node> queue = new ArrayDeque<Node>();
 
 		// A queue to store the visited nodes.
-		ArrayDeque<String> visited = new ArrayDeque<String>();
+		ArrayDeque<Node> visited = new ArrayDeque<Node>();
 
-		queue.offer(source);
+		queue.offer(sourceNode);
 		while (!queue.isEmpty()) {
-			String vertex = queue.poll();
-			visited.offer(vertex);
+			Node vertexNode = queue.poll();
+			if (!sourceNode.equals(vertexNode) && !adjacencyLists.containsKey(vertexNode.getName())) {
+				applyOperation(results, operation, sourceNode, vertexNode);
+			}
+			visited.offer(vertexNode);
 
-			Set<Node> neighboursList = getNeighbours(vertex);
+			Set<Node> neighboursList = getNeighbours(vertexNode.getName());
 			if (neighboursList != null) {
 				Iterator<Node> it = neighboursList.iterator();
 				while (it.hasNext()) {
 					Node currentNode = it.next();
-					String nodeName = currentNode.getName();
-					path.add(nodeName);
-					path.add(vertex);
-
-					if (nodeName.equals(destination)) {
-						return processPath(source, destination, path);
-					} else {
-						if (!visited.contains(nodeName)) {
-							queue.offer(nodeName);
-						}
+					if (!visited.contains(currentNode)) {
+						queue.offer(currentNode);
 					}
-
 				}
 			}
 		}
-		return null;
+		
+		return results;
 	}
 
-	private static ArrayList<String> processPath(String src, String destination, ArrayList<String> path) {
-
-		int index = path.indexOf(destination);
-		String source = path.get(index + 1);
-
-		shortestPath.add(0, destination);
-
-		if (source.equals(src)) {
-			shortestPath.add(0, src);
-			return shortestPath;
-		} else {
-			return processPath(src, source, path);
+	private void applyOperation(List<String> results ,String operation, Node sourceNode, Node vertex) {
+		if(operation.equals("FUND_WEIGHT")) {
+			double totalWeight = findTotalWeight(sourceNode.getName());
+			results.add(
+					sourceNode.getName() + "," + vertex.getName() + "," + new DecimalFormat("#.###").format(vertex.getData() / totalWeight));
+		} else if(operation.equals("WEIGHTED_RETURN")) {
+			double emvWeightOfRoot = findEmvOfRoot();
+			double emv = vertex.getData();
+			double emvWeight = emv/emvWeightOfRoot;
+			results.add(
+					sourceNode.getName() + "," + vertex.getName() + "," + new DecimalFormat("#.###").format(emvWeight * emv));
 		}
+		
 	}
-
-
 }
