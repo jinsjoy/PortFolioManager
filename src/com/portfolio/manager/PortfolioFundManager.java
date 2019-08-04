@@ -34,8 +34,8 @@ public class PortfolioFundManager {
 				fundGraph.addEdge(tokens[0], tokens[1], Integer.parseInt(tokens[2]));
 			}
 			reader.close();
-		} catch (Exception e) {
-			throw e;
+		} catch (Exception exception) {
+			throw exception;
 		}
 
 		List<String> fundweights = fundGraph.fundWeightCalculator();
